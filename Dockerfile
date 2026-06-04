@@ -23,7 +23,8 @@ COPY . /var/www/html/
 
 # Instalar las dependencias de PHP (la librería de Mongo)
 WORKDIR /var/www/html
-RUN composer install --no-dev --optimize-autoloader
+ENV COMPOSER_ALLOW_SUPERUSER=1
+RUN composer install --no-dev --optimize-autoloader --no-interaction --ignore-platform-reqs
 
 # Ajustar permisos para Apache
 RUN chown -R www-data:www-data /var/www/html
