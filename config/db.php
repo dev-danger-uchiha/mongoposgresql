@@ -30,7 +30,7 @@ try {
     $mongoClient = new MongoDB\Client($mongoUri);
     // Usamos variables de entorno también para el nombre de la DB
     $mongoDbName = getenv('MONGO_DB_NAME') ?: 'mi_base_datos'; 
-    $mongoCollection = $mongoClient->$mongoDbName->fotos_clientes;
+    $mongoCollection = $mongoClient->$mongoDbName->clientes;
     
     $mongoClient->selectDatabase('admin')->command(['ping' => 1]); 
 } catch (Exception $e) {
