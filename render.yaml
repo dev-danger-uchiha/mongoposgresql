@@ -1,0 +1,58 @@
+# render.yaml
+# ─────────────────────────────────────────────────────────────
+# Define TODOS los servicios del proyecto en un solo archivo.
+# Render lo detecta automáticamente en la raíz del repositorio.
+# Documentación: https://render.com/docs/infrastructure-as-code
+# ─────────────────────────────────────────────────────────────
+
+services:
+  # ── Aplicación PHP ──────────────────────────────────────────
+  - type: web
+    name: dual-db-php-app
+    runtime: docker              # PHP se despliega vía Docker en Render
+    dockerfilePath: ./Dockerfile # Ruta relativa al Dockerfile
+    plan: free                   # Tier gratuito
+    autoDeploy: true             # Re-deploy automático con cada git push
+
+    envVars:
+      # ── PostgreSQL (referencia a la BD de Render de abajo) ──
+      - key: POSTGRES_HOST
+        fromDatabase:
+          name: dual-db-postgres
+          property: host
+
+      - key: POSTGRES_PORT
+        fromDatabase:
+          name: dual-db-postgres
+          property: port
+
+      - key: POSTGRES_DB
+        fromDatabase:
+          name: dual-db-postgres
+          property: database
+
+      - key: POSTGRES_USER
+        fromDatabase:
+          name: dual-db-postgres
+          property: user
+
+      - key: POSTGRES_PASSWORD
+        fromDatabase:
+          name: dual-db-postgres
+          property: password
+
+      # ── MongoDB Atlas (configura manualmente en el Dashboard) ──
+      # Render no gestiona Atlas; la URI se agrega como variable manual.
+      # Formato: mongodb+srv://usuario:password@cluster.mongodb.net/dual_db
+      - key: MONGO_URI
+        sync: false              # Se introduce manualmente en el Dashboard
+
+      - key: MONGO_DB
+        value: dual_db
+
+  # ── Base de datos PostgreSQL gestionada por Render ─────────
+databases:
+  - name: dual-db-postgres
+    plan: free
+    databaseName: dual_db
+    user: app_user
