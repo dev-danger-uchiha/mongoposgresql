@@ -1,17 +1,7 @@
 {
-    "name": "budgetmap/dual-db-php",
-    "description": "Aplicación PHP con arquitectura dual PostgreSQL + MongoDB",
-    "type": "project",
+    "name": "fer/proyecto-dual",
+    "description": "Backend dual con PostgreSQL y MongoDB",
     "require": {
-        "php": ">=8.1",
-        "mongodb/mongodb": "^1.15"
-    },
-    "autoload": {
-        "psr-4": {
-            "App\\": "src/"
-        }
-    },
-    "config": {
-        "optimize-autoloader": true
+        "mongodb/mongodb": "^1.17"
     }
 }
