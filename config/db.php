@@ -2,40 +2,39 @@
 require __DIR__ . '/../vendor/autoload.php';
 
 // ==========================================
-// 1. Conexión a PostgreSQL (PDO Estricto)
+// 1. Conexión a PostgreSQL 
 // ==========================================
-$pgHost = '127.0.0.1';
-$pgDb   = 'mi_base_datos';
-$pgUser = 'postgres';
-$pgPass = 'tu_password';
+$pgHost = getenv('PG_HOST');
+$pgDb   = getenv('PG_DB');
+$pgUser = getenv('PG_USER');
+$pgPass = getenv('PG_PASS');
 
 try {
     $dsn = "pgsql:host=$pgHost;dbname=$pgDb";
     $pdo = new PDO($dsn, $pgUser, $pgPass, [
-        PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION, // Manejo estricto de errores
+        PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
         PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC
     ]);
 } catch (PDOException $e) {
-    die("Error crítico: No se pudo conectar a PostgreSQL. Detalles: " . $e->getMessage());
+    die("Error crítico: No se pudo conectar a PostgreSQL."); // Ocultar detalles del error en producción
 }
 
 // ==========================================
-// 2. Conexión a MongoDB
+// 2. Conexión a MongoDB Atlas
 // ==========================================
-$mongoUri = "mongodb://127.0.0.1:27017";
+$mongoUri = getenv('MONGO_URI');
 $mongoClient = null;
 $mongoCollection = null;
 
 try {
     $mongoClient = new MongoDB\Client($mongoUri);
-    // Seleccionamos base de datos y colección
-    $mongoCollection = $mongoClient->mi_base_datos->fotos_clientes;
+    // Usamos variables de entorno también para el nombre de la DB
+    $mongoDbName = getenv('MONGO_DB_NAME') ?: 'mi_base_datos'; 
+    $mongoCollection = $mongoClient->$mongoDbName->fotos_clientes;
     
-    // Provocar un error si el servidor de Mongo está apagado haciendo un ping rápido
     $mongoClient->selectDatabase('admin')->command(['ping' => 1]); 
 } catch (Exception $e) {
-    // No detenemos la ejecución, permitimos que la app maneje la falla más adelante
     $mongoCollection = null; 
-    error_log("Advertencia: No se pudo conectar a MongoDB. " . $e->getMessage());
+    error_log("Advertencia: No se pudo conectar a MongoDB Atlas.");
 }
 ?>
