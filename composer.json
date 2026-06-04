@@ -2,6 +2,6 @@
     "name": "fer/proyecto-dual",
     "description": "Backend dual con PostgreSQL y MongoDB",
     "require": {
-        "mongodb/mongodb": "^1.17"
+        "mongodb/mongodb": "*"
     }
 }
