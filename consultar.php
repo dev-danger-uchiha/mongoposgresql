@@ -143,8 +143,9 @@ $lista = obtenerListadoClientes();
             width: 44px;
             height: 44px;
             border-radius: 50%;
-            object-fit: cover;
-            background: rgba(59, 130, 246, 0.2);
+            background-size: cover;
+            background-position: center;
+            background-color: rgba(59, 130, 246, 0.2);
             display: inline-flex;
             align-items: center;
             justify-content: center;
@@ -371,7 +372,7 @@ $lista = obtenerListadoClientes();
                             <td><span class="badge">#<?php echo htmlspecialchars($cliente['id']); ?></span></td>
                             <td>
                                 <?php if (strpos($cliente['foto'], 'Sin foto') === false && $cliente['foto'] !== ''): ?>
-                                    <div class="avatar" style="background-image: url('<?php echo htmlspecialchars($cliente['foto']); ?>');"></div>
+                                    <div class="avatar" style="background-image: url('<?php echo htmlspecialchars(ltrim($cliente['foto'], '/')); ?>');"></div>
                                 <?php else: ?>
                                     <div class="avatar">
                                         <?php echo strtoupper(substr($cliente['nombre'], 0, 2)); ?>
@@ -453,7 +454,8 @@ $lista = obtenerListadoClientes();
 
             const avatarContainer = document.getElementById('modalAvatar');
             if (cliente.foto && !cliente.foto.includes('Sin foto') && cliente.foto !== '') {
-                avatarContainer.style.backgroundImage = `url('${cliente.foto}')`;
+                const fotoUrl = cliente.foto.startsWith('/') ? cliente.foto.substring(1) : cliente.foto;
+                avatarContainer.style.backgroundImage = `url('${fotoUrl}')`;
                 avatarContainer.style.backgroundColor = 'transparent';
                 avatarContainer.textContent = '';
             } else {
