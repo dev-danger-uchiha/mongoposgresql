@@ -62,22 +62,24 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $nombre = $_POST['nombre'] ?? '';
     $email = $_POST['email'] ?? '';
     $telefono = $_POST['telefono'] ?? '';
-    $rutaFoto = '/uploads/fotos/default.jpg'; // Foto por defecto
+    $rutaFoto = 'Sin foto'; // Foto por defecto
     
-    // Procesar la subida del archivo de imagen
+    // Procesar la subida del archivo de imagen (Convertir a Base64)
     if (isset($_FILES['foto']) && $_FILES['foto']['error'] === UPLOAD_ERR_OK) {
-        $uploadDir = __DIR__ . '/uploads/fotos/';
-        // Crear el directorio si no existe
-        if (!is_dir($uploadDir)) {
-            mkdir($uploadDir, 0755, true);
+        $tmpName = $_FILES['foto']['tmp_name'];
+        
+        // Obtener el tipo de contenido real de la imagen
+        $fileType = mime_content_type($tmpName);
+        if (!$fileType) {
+            $fileType = $_FILES['foto']['type'];
         }
         
-        $fileName = time() . '_' . preg_replace('/[^a-zA-Z0-9.\-_]/', '', basename($_FILES['foto']['name']));
-        $targetFile = $uploadDir . $fileName;
+        // Leer el contenido del archivo y convertirlo a Base64
+        $fileData = file_get_contents($tmpName);
+        $base64Data = base64_encode($fileData);
         
-        if (move_uploaded_file($_FILES['foto']['tmp_name'], $targetFile)) {
-            $rutaFoto = '/uploads/fotos/' . $fileName;
-        }
+        // Formatear como un Data URI válido para HTML/CSS
+        $rutaFoto = 'data:' . $fileType . ';base64,' . $base64Data;
     }
     
     if (!empty($nombre) && !empty($email)) {

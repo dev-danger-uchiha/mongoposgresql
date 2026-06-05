@@ -371,7 +371,7 @@ $lista = obtenerListadoClientes();
                         <tr onclick="openModal(this)" data-cliente='<?php echo htmlspecialchars(json_encode($cliente), ENT_QUOTES, 'UTF-8'); ?>'>
                             <td><span class="badge">#<?php echo htmlspecialchars($cliente['id']); ?></span></td>
                             <td>
-                                <?php if (strpos($cliente['foto'], 'Sin foto') === false && $cliente['foto'] !== ''): ?>
+                                <?php if (strpos($cliente['foto'], 'Sin foto') === false && $cliente['foto'] !== '' && strpos($cliente['foto'], 'default.jpg') === false): ?>
                                     <div class="avatar" style="background-image: url('<?php echo htmlspecialchars(ltrim($cliente['foto'], '/')); ?>');"></div>
                                 <?php else: ?>
                                     <div class="avatar">
@@ -430,7 +430,7 @@ $lista = obtenerListadoClientes();
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
                     PostgreSQL
                 </div>
-                <div class="status-badge <?php echo ($mongoCollection !== null) ? 'connected' : 'disconnected'; ?>">
+                <div id="mongoStatusBadge" class="status-badge <?php echo ($mongoCollection !== null) ? 'connected' : 'disconnected'; ?>">
                     <?php if ($mongoCollection !== null): ?>
                         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
                     <?php else: ?>
@@ -453,7 +453,9 @@ $lista = obtenerListadoClientes();
             document.getElementById('modalDate').textContent = cliente.creado_en ? new Date(cliente.creado_en).toLocaleString() : 'N/A';
 
             const avatarContainer = document.getElementById('modalAvatar');
-            if (cliente.foto && !cliente.foto.includes('Sin foto') && cliente.foto !== '') {
+            const hasPhoto = cliente.foto && !cliente.foto.includes('Sin foto') && cliente.foto !== '' && !cliente.foto.includes('default.jpg');
+            
+            if (hasPhoto) {
                 const fotoUrl = cliente.foto.startsWith('/') ? cliente.foto.substring(1) : cliente.foto;
                 avatarContainer.style.backgroundImage = `url('${fotoUrl}')`;
                 avatarContainer.style.backgroundColor = 'transparent';
@@ -462,6 +464,16 @@ $lista = obtenerListadoClientes();
                 avatarContainer.style.backgroundImage = 'none';
                 avatarContainer.style.backgroundColor = 'rgba(59, 130, 246, 0.1)';
                 avatarContainer.textContent = cliente.nombre.substring(0, 2).toUpperCase();
+            }
+
+            // Actualizar el estado de MongoDB basado en si hay foto o no
+            const mongoStatusBadge = document.getElementById('mongoStatusBadge');
+            if (hasPhoto) {
+                mongoStatusBadge.className = 'status-badge connected';
+                mongoStatusBadge.innerHTML = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg> MongoDB';
+            } else {
+                mongoStatusBadge.className = 'status-badge disconnected';
+                mongoStatusBadge.innerHTML = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg> MongoDB';
             }
 
             document.getElementById('clientModal').classList.add('active');
