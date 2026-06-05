@@ -371,8 +371,8 @@ $lista = obtenerListadoClientes();
                         <tr onclick="openModal(this)" data-cliente='<?php echo htmlspecialchars(json_encode($cliente), ENT_QUOTES, 'UTF-8'); ?>'>
                             <td><span class="badge">#<?php echo htmlspecialchars($cliente['id']); ?></span></td>
                             <td>
-                                <?php if (strpos($cliente['foto'], 'Sin foto') === false && $cliente['foto'] !== '' && strpos($cliente['foto'], 'default.jpg') === false): ?>
-                                    <div class="avatar" style="background-image: url('<?php echo htmlspecialchars(ltrim($cliente['foto'], '/')); ?>');"></div>
+                                <?php if (strpos($cliente['foto'], 'data:image') === 0): ?>
+                                    <div class="avatar" style="background-image: url('<?php echo htmlspecialchars($cliente['foto']); ?>');"></div>
                                 <?php else: ?>
                                     <div class="avatar">
                                         <?php echo strtoupper(substr($cliente['nombre'], 0, 2)); ?>
@@ -453,11 +453,10 @@ $lista = obtenerListadoClientes();
             document.getElementById('modalDate').textContent = cliente.creado_en ? new Date(cliente.creado_en).toLocaleString() : 'N/A';
 
             const avatarContainer = document.getElementById('modalAvatar');
-            const hasPhoto = cliente.foto && !cliente.foto.includes('Sin foto') && cliente.foto !== '' && !cliente.foto.includes('default.jpg');
+            const hasPhoto = cliente.foto && cliente.foto.startsWith('data:image');
             
             if (hasPhoto) {
-                const fotoUrl = cliente.foto.startsWith('/') ? cliente.foto.substring(1) : cliente.foto;
-                avatarContainer.style.backgroundImage = `url('${fotoUrl}')`;
+                avatarContainer.style.backgroundImage = `url('${cliente.foto}')`;
                 avatarContainer.style.backgroundColor = 'transparent';
                 avatarContainer.textContent = '';
             } else {
