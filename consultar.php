@@ -204,6 +204,140 @@ $lista = obtenerListadoClientes();
             from { opacity: 0; transform: translateY(-20px); }
             to { opacity: 1; transform: translateY(0); }
         }
+        /* Modal Styles */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(15, 23, 42, 0.8);
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
+        }
+        .modal-overlay.active {
+            opacity: 1;
+            visibility: visible;
+        }
+        .modal-content {
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 24px;
+            width: 90%;
+            max-width: 500px;
+            padding: 2.5rem;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+            transform: scale(0.95) translateY(20px);
+            transition: all 0.3s ease;
+            position: relative;
+        }
+        .modal-overlay.active .modal-content {
+            transform: scale(1) translateY(0);
+        }
+        .modal-close {
+            position: absolute;
+            top: 1.5rem;
+            right: 1.5rem;
+            background: none;
+            border: none;
+            color: var(--text-muted);
+            cursor: pointer;
+            transition: color 0.2s;
+        }
+        .modal-close:hover {
+            color: white;
+        }
+        .modal-header {
+            display: flex;
+            align-items: center;
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+            padding-bottom: 1.5rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+        .modal-avatar {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            background-size: cover;
+            background-position: center;
+            border: 3px solid rgba(59, 130, 246, 0.3);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.2);
+            background-color: rgba(59, 130, 246, 0.1);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2rem;
+            font-weight: 700;
+            color: #60a5fa;
+        }
+        .modal-info h2 {
+            font-size: 1.5rem;
+            margin-bottom: 0.25rem;
+            color: white;
+        }
+        .modal-info p {
+            color: var(--text-muted);
+            font-size: 0.95rem;
+        }
+        .modal-body {
+            display: grid;
+            gap: 1.25rem;
+        }
+        .detail-item {
+            background: rgba(15, 23, 42, 0.4);
+            padding: 1rem;
+            border-radius: 12px;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+        .detail-label {
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--text-muted);
+            margin-bottom: 0.25rem;
+        }
+        .detail-value {
+            font-size: 1.05rem;
+            color: #e2e8f0;
+            font-weight: 500;
+        }
+        .connection-status {
+            display: flex;
+            gap: 1rem;
+            margin-top: 1.5rem;
+            padding-top: 1.5rem;
+            border-top: 1px solid var(--border-color);
+        }
+        .status-badge {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            padding: 0.75rem;
+            border-radius: 12px;
+            font-size: 0.85rem;
+            font-weight: 600;
+        }
+        .status-badge.connected {
+            background: rgba(52, 211, 153, 0.1);
+            color: #34d399;
+            border: 1px solid rgba(52, 211, 153, 0.2);
+        }
+        .status-badge.disconnected {
+            background: rgba(248, 113, 113, 0.1);
+            color: #f87171;
+            border: 1px solid rgba(248, 113, 113, 0.2);
+        }
+        tr { cursor: pointer; }
     </style>
 </head>
 <body>
@@ -233,7 +367,7 @@ $lista = obtenerListadoClientes();
                 </thead>
                 <tbody>
                     <?php foreach ($lista as $cliente): ?>
-                        <tr>
+                        <tr onclick="openModal(this)" data-cliente='<?php echo htmlspecialchars(json_encode($cliente), ENT_QUOTES, 'UTF-8'); ?>'>
                             <td><span class="badge">#<?php echo htmlspecialchars($cliente['id']); ?></span></td>
                             <td>
                                 <?php if (strpos($cliente['foto'], 'Sin foto') === false && $cliente['foto'] !== ''): ?>
@@ -259,5 +393,82 @@ $lista = obtenerListadoClientes();
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
         Registrar Cliente de Prueba
     </a>
+
+    <!-- Modal Container -->
+    <div class="modal-overlay" id="clientModal" onclick="closeModal(event)">
+        <div class="modal-content" onclick="event.stopPropagation()">
+            <button class="modal-close" onclick="closeModal()">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+            </button>
+            
+            <div class="modal-header">
+                <div id="modalAvatar" class="modal-avatar"></div>
+                <div class="modal-info">
+                    <h2 id="modalName">Nombre del Cliente</h2>
+                    <p id="modalEmail">correo@ejemplo.com</p>
+                </div>
+            </div>
+
+            <div class="modal-body">
+                <div class="detail-item">
+                    <div class="detail-label">ID del Cliente</div>
+                    <div class="detail-value" id="modalId">#0</div>
+                </div>
+                <div class="detail-item">
+                    <div class="detail-label">Teléfono</div>
+                    <div class="detail-value" id="modalPhone">+0 000 000 0000</div>
+                </div>
+                <div class="detail-item">
+                    <div class="detail-label">Fecha de Registro</div>
+                    <div class="detail-value" id="modalDate">00/00/0000</div>
+                </div>
+            </div>
+
+            <div class="connection-status">
+                <div class="status-badge connected">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                    PostgreSQL
+                </div>
+                <div class="status-badge <?php echo ($mongoCollection !== null) ? 'connected' : 'disconnected'; ?>">
+                    <?php if ($mongoCollection !== null): ?>
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                    <?php else: ?>
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+                    <?php endif; ?>
+                    MongoDB
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function openModal(row) {
+            const cliente = JSON.parse(row.getAttribute('data-cliente'));
+            
+            document.getElementById('modalId').textContent = '#' + cliente.id;
+            document.getElementById('modalName').textContent = cliente.nombre;
+            document.getElementById('modalEmail').textContent = cliente.email;
+            document.getElementById('modalPhone').textContent = cliente.telefono;
+            document.getElementById('modalDate').textContent = cliente.creado_en ? new Date(cliente.creado_en).toLocaleString() : 'N/A';
+
+            const avatarContainer = document.getElementById('modalAvatar');
+            if (cliente.foto && !cliente.foto.includes('Sin foto') && cliente.foto !== '') {
+                avatarContainer.style.backgroundImage = `url('${cliente.foto}')`;
+                avatarContainer.style.backgroundColor = 'transparent';
+                avatarContainer.textContent = '';
+            } else {
+                avatarContainer.style.backgroundImage = 'none';
+                avatarContainer.style.backgroundColor = 'rgba(59, 130, 246, 0.1)';
+                avatarContainer.textContent = cliente.nombre.substring(0, 2).toUpperCase();
+            }
+
+            document.getElementById('clientModal').classList.add('active');
+        }
+
+        function closeModal(event) {
+            if (event && event.target !== event.currentTarget) return;
+            document.getElementById('clientModal').classList.remove('active');
+        }
+    </script>
 </body>
 </html>
